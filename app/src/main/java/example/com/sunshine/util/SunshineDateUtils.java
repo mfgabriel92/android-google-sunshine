@@ -78,28 +78,28 @@ public class SunshineDateUtils {
      * or "Friday"
      */
     public static String getFriendlyDateString(Context context, long dateInMillis, boolean showFullDate) {
-        long localdate = getLocalDateFromUTC(dateInMillis);
-        long dayNumber = getDayNumber(localdate);
+        long localDate = getLocalDateFromUTC(dateInMillis);
+        long dayNumber = getDayNumber(localDate);
         long currentDayNumber = getDayNumber(System.currentTimeMillis());
 
         if (dayNumber == currentDayNumber || showFullDate) {
-            String dayName = getDayName(context, localdate);
-            String readableDate = getReadableDateString(context, localdate);
+            String dayName = getDayName(context, localDate);
+            String readableDate = getReadableDateString(context, localDate);
 
             if (dayNumber - currentDayNumber < 2) {
-                String localizedDayName = new SimpleDateFormat("EEEE", Locale.US).format(localdate);
+                String localizedDayName = new SimpleDateFormat("EEEE", Locale.US).format(localDate);
                 return readableDate.replace(localizedDayName, dayName);
             } else {
                 return readableDate;
             }
         } else if (dayNumber < currentDayNumber + 7) {
-            return getDayName(context, localdate);
+            return getDayName(context, localDate);
         } else {
             int flags = DateUtils.FORMAT_SHOW_DATE |
                         DateUtils.FORMAT_NO_YEAR |
                         DateUtils.FORMAT_ABBREV_ALL |
                         DateUtils.FORMAT_SHOW_WEEKDAY;
-            return DateUtils.formatDateTime(context, localdate, flags);
+            return DateUtils.formatDateTime(context, localDate, flags);
         }
     }
 

@@ -15,11 +15,11 @@ public class OpenWeatherJsonUtils {
      * This method parses JSON from a web response and returns an array of Strings
      * describing the weather over various days from the forecast.
      *
-     * @param forecastJsonStr JSON response from server
+     * @param json JSON response from server
      * @return Array of Strings describing weather data
      * @throws JSONException If JSON data cannot be properly parsed
      */
-    public static String[] getSimpleWeatherStringsFromJson(Context context, String forecastJsonStr) throws JSONException {
+    public static String[] parseJsonFromWebResponse(Context context, String json) throws JSONException {
         final String OWM_LIST = "list";
         final String OWM_TEMPERATURE = "temp";
         final String OWM_MAX = "max";
@@ -27,8 +27,8 @@ public class OpenWeatherJsonUtils {
         final String OWM_WEATHER = "weather";
         final String OWM_DESCRIPTION = "main";
         final String OWM_MESSAGE_CODE = "cod";
-        String[] parsedWeatherData = null;
-        JSONObject forecastJson = new JSONObject(forecastJsonStr);
+        String[] parsedWeatherData;
+        JSONObject forecastJson = new JSONObject(json);
 
         if (forecastJson.has(OWM_MESSAGE_CODE)) {
             int errorCode = forecastJson.getInt(OWM_MESSAGE_CODE);
@@ -74,10 +74,10 @@ public class OpenWeatherJsonUtils {
      * Parse the JSON and convert it into ContentValues that can be inserted into our database.
      *
      * @param context An application context, such as a service or activity context.
-     * @param forecastJsonStr The JSON to parse into ContentValues.
+     * @param json The JSON to parse into ContentValues.
      * @return An array of ContentValues parsed from the JSON.
      */
-    public static ContentValues[] getFullWeatherDataFromJson(Context context, String forecastJsonStr) {
+    public static ContentValues[] getFullWeatherDataFromJson(Context context, String json) {
         return null;
     }
 }
