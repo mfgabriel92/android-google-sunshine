@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.json.JSONException;
@@ -20,6 +22,8 @@ import example.com.sunshine.util.OpenWeatherJsonUtils;
 public class MainActivity extends AppCompatActivity {
 
     private TextView mTvDummyData;
+    private TextView mTvErrorMessage;
+    private ProgressBar mPbProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mTvDummyData = findViewById(R.id.tvDummyData);
+        mTvErrorMessage = findViewById(R.id.tvErrorMessage);
+        mPbProgressBar = findViewById(R.id.pbProgressBar);
 
         loadWeatherData();
     }
@@ -63,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
     public class WeatherQueryTask extends AsyncTask<String, Void, String[]> {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mPbProgressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
         protected String[] doInBackground(String... strings) {
             if (strings.length == 0) {
                 return null;
@@ -85,10 +97,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String[] data) {
-            if (data != null) {
-                for (String d : data) {
-                    mTvDummyData.append(d + "\n\n\n");
-                }
+            mPbProgressBar.setVisibility(View.INVISIBLE);
+
+            if (data == null) {
+                mTvDummyData.setVisibility(View.INVISIBLE);
+                mTvErrorMessage.setVisibility(View.VISIBLE);
+                return;
+            }
+
+            mTvDummyData.setVisibility(View.VISIBLE);
+            mTvErrorMessage.setVisibility(View.INVISIBLE);
+
+            for (String d : data) {
+                mTvDummyData.append(d + "\n\n\n");
             }
         }
     }

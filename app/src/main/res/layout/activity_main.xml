@@ -18,6 +18,21 @@
             android:padding="16dp"
             android:textSize="20sp"
             tools:text="Lorem ipsum dolor sit amet"/>
-
     </ScrollView>
+
+    <TextView
+        android:id="@+id/tvErrorMessage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textColor="@android:color/holo_red_light"
+        android:text="@string/error_message"
+        android:visibility="invisible"
+        tools:text="Error message"/>
+
+    <ProgressBar
+        android:id="@+id/pbProgressBar"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"/>
 </FrameLayout>
