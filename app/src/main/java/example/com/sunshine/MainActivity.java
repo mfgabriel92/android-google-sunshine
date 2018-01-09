@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import org.json.JSONException;
@@ -26,6 +28,30 @@ public class MainActivity extends AppCompatActivity {
 
         mTvDummyData = findViewById(R.id.tvDummyData);
 
+        loadWeatherData();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_activity_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.menuRefresh:
+                mTvDummyData.setText("");
+                loadWeatherData();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void loadWeatherData() {
         String location = SunshinePreferences.getPreferredWeatherLocation(this);
         new WeatherQueryTask().execute(location);
     }
