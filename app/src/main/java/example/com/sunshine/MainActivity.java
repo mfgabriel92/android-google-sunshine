@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 
@@ -22,7 +23,7 @@ import example.com.sunshine.data.SunshinePreferences;
 import example.com.sunshine.util.NetworkUtils;
 import example.com.sunshine.util.OpenWeatherJsonUtils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityAdapter.MainActivityAdapterOnClickHandler {
 
     private TextView mTvErrorMessage;
     private ProgressBar mPbProgressBar;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         mTvErrorMessage = findViewById(R.id.tvErrorMessage);
         mPbProgressBar = findViewById(R.id.pbProgressBar);
         mRvMainActivity = findViewById(R.id.rvMainActivity);
-        mMainActivityAdapter = new MainActivityAdapter();
+        mMainActivityAdapter = new MainActivityAdapter(this);
 
         setupLayoutManager();
         loadWeatherData();
@@ -61,6 +62,17 @@ public class MainActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /**
+     * This method is overridden by our MainActivity class in order to handle RecyclerView item
+     * clicks from {@link MainActivityAdapter.MainActivityAdapterOnClickHandler}.
+     *
+     * @param data data to
+     */
+    @Override
+    public void onClickHandler(String data) {
+        Toast.makeText(this, data, Toast.LENGTH_LONG).show();
     }
 
     /**

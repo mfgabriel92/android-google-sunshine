@@ -1,8 +1,10 @@
 package example.com.sunshine.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -11,6 +13,11 @@ import example.com.sunshine.R;
 public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapter.MainActivityViewHolder> {
 
     private String[] mWeatherData;
+    private MainActivityAdapterOnClickHandler mClickHandler;
+
+    public MainActivityAdapter(MainActivityAdapterOnClickHandler click) {
+        mClickHandler = click;
+    }
 
     /**
      * It is called when each new ViewHolder is created.
@@ -59,13 +66,32 @@ public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapte
         notifyDataSetChanged();
     }
 
-    public class MainActivityViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * The interface to receive onClickHandler messages
+     */
+    public interface MainActivityAdapterOnClickHandler {
+        void onClickHandler(String data);
+    }
+
+    /**
+     * The ViewHolder cache of the children for a list of weather
+     */
+    public class MainActivityViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
 
         public final TextView mTvWeatherDataItem;
 
         public MainActivityViewHolder(View itemView) {
             super(itemView);
+            itemView.setOnClickListener(this);
+
             mTvWeatherDataItem = itemView.findViewById(R.id.tvWeatherDataItem);
+        }
+
+        @Override
+        public void onClick(View v) {
+            String data = mWeatherData[getAdapterPosition()];
+            Log.v("V/MAA", data);
+            mClickHandler.onClickHandler(data);
         }
     }
 }
