@@ -2,8 +2,10 @@ package example.com.sunshine;
 
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,25 +17,29 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
 
+import example.com.sunshine.adapter.MainActivityAdapter;
 import example.com.sunshine.data.SunshinePreferences;
 import example.com.sunshine.util.NetworkUtils;
 import example.com.sunshine.util.OpenWeatherJsonUtils;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView mTvDummyData;
     private TextView mTvErrorMessage;
     private ProgressBar mPbProgressBar;
+    private RecyclerView mRvMainActivity;
+    private MainActivityAdapter mMainActivityAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTvDummyData = findViewById(R.id.tvDummyData);
         mTvErrorMessage = findViewById(R.id.tvErrorMessage);
         mPbProgressBar = findViewById(R.id.pbProgressBar);
+        mRvMainActivity = findViewById(R.id.rvMainActivity);
+        mMainActivityAdapter = new MainActivityAdapter();
 
+        setupLayoutManager();
         loadWeatherData();
     }
 
@@ -49,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch (id) {
             case R.id.menuRefresh:
-                mTvDummyData.setText("");
+                mMainActivityAdapter.setWeatherData(null);
                 loadWeatherData();
                 return true;
             default:
@@ -57,6 +63,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up the LayoutManager
+     */
+    private void setupLayoutManager() {
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mRvMainActivity.setLayoutManager(layoutManager);
+        mRvMainActivity.setAdapter(mMainActivityAdapter);
+    }
+
+    /**
+     * Loads the weather data by executing the inner class WeatherQueryTask
+     */
     private void loadWeatherData() {
         String location = SunshinePreferences.getPreferredWeatherLocation(this);
         new WeatherQueryTask().execute(location);
@@ -100,17 +118,13 @@ public class MainActivity extends AppCompatActivity {
             mPbProgressBar.setVisibility(View.INVISIBLE);
 
             if (data == null) {
-                mTvDummyData.setVisibility(View.INVISIBLE);
+                mRvMainActivity.setVisibility(View.INVISIBLE);
                 mTvErrorMessage.setVisibility(View.VISIBLE);
                 return;
             }
 
-            mTvDummyData.setVisibility(View.VISIBLE);
-            mTvErrorMessage.setVisibility(View.INVISIBLE);
-
-            for (String d : data) {
-                mTvDummyData.append(d + "\n\n\n");
-            }
+            mMainActivityAdapter.setWeatherData(data);
+            mRvMainActivity.setVisibility(View.VISIBLE);
         }
     }
 }
