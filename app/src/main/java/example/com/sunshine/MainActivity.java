@@ -10,7 +10,6 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,7 +21,6 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 
 import example.com.sunshine.adapter.MainActivityAdapter;
 import example.com.sunshine.data.SunshinePreferences;
@@ -63,12 +61,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.menuActionRefresh:
+            case R.id.menuRefresh:
                 mMainActivityAdapter.setWeatherData(null);
                 loadWeatherData();
                 return true;
-            case R.id.menuActionMap:
+            case R.id.menuMap:
                 openMapLocation();
+                return true;
+            case R.id.menuSettings:
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
