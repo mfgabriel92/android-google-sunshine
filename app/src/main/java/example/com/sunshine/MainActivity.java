@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
      * Loads the weather data by executing the inner class WeatherQueryTask
      */
     private void loadWeatherData() {
-        getSupportLoaderManager().initLoader(FORECAST_WEATHER_ID, null, MainActivity.this);
+        getSupportLoaderManager().restartLoader(FORECAST_WEATHER_ID, null, MainActivity.this);
     }
 
     /**
