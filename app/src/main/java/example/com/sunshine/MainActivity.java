@@ -2,6 +2,7 @@ package example.com.sunshine;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -56,9 +57,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.menuRefresh:
+            case R.id.menuActionRefresh:
                 mMainActivityAdapter.setWeatherData(null);
                 loadWeatherData();
+                return true;
+            case R.id.menuActionMap:
+                openMapLocation();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -94,6 +98,20 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
     private void loadWeatherData() {
         String location = SunshinePreferences.getPreferredWeatherLocation(this);
         new WeatherQueryTask().execute(location);
+    }
+
+    private void openMapLocation() {
+        String address = SunshinePreferences.getPreferredWeatherLocation(this);
+        Uri geo =  Uri.parse("geo:0,0?q" + address);
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geo);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Could not call " + geo.toString() + ", no receiving apps installed", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
