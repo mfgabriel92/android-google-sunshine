@@ -1,6 +1,7 @@
 package example.com.sunshine;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -68,11 +69,14 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
      * This method is overridden by our MainActivity class in order to handle RecyclerView item
      * clicks from {@link MainActivityAdapter.MainActivityAdapterOnClickHandler}.
      *
-     * @param data data to
+     * @param data data to display
      */
     @Override
     public void onClickHandler(String data) {
-        Toast.makeText(this, data, Toast.LENGTH_LONG).show();
+        Intent weatherDetailIntent = new Intent(this, WeatherDetailActivity.class);
+        weatherDetailIntent.putExtra(Intent.EXTRA_TEXT, data);
+
+        startActivity(weatherDetailIntent);
     }
 
     /**
@@ -137,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
 
             mMainActivityAdapter.setWeatherData(data);
             mRvMainActivity.setVisibility(View.VISIBLE);
+            mTvErrorMessage.setVisibility(View.INVISIBLE);
         }
     }
 }
