@@ -228,7 +228,7 @@ public class MainActivity
      */
     private void openMapLocation() {
         String address = SunshinePreferences.getPreferredWeatherLocation(this);
-        Uri geo =  Uri.parse("geo:0,0?q" + address);
+        Uri geo =  Uri.parse("geo:0,0?q=" + address);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(geo);
@@ -239,6 +239,4 @@ public class MainActivity
             Toast.makeText(this, "Could not call " + geo.toString() + ", no receiving apps installed", Toast.LENGTH_SHORT).show();
         }
     }
-
-    private void restartLoader() {}
 }
