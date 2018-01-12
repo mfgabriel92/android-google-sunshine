@@ -190,7 +190,7 @@ public class MainActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-
+        PREFERENCES_UPDATED = true;
     }
 
     /**
