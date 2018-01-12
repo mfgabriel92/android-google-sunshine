@@ -18,7 +18,7 @@ public class WeatherContract {
         public static final String CREATE_TABLE =
             "CREATE TABLE " + TABLE_NAME + "(" +
                 _ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                COLUMN_DATE + " INTEGER NOT NULL," +
+                COLUMN_DATE + " INTEGER UNIQUE NOT NULL," +
                 COLUMN_WEATHER_ID + " INTEGER NOT NULL," +
                 COLUMN_MIN_TEMP + " REAL NOT NULL," +
                 COLUMN_MAX_TEMP + " REAL NOT NULL," +
