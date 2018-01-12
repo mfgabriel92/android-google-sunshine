@@ -2,8 +2,10 @@ package example.com.sunshine;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -27,10 +29,15 @@ import example.com.sunshine.data.SunshinePreferences;
 import example.com.sunshine.util.NetworkUtils;
 import example.com.sunshine.util.OpenWeatherJsonUtils;
 
-public class MainActivity extends AppCompatActivity implements MainActivityAdapter.MainActivityAdapterOnClickHandler, LoaderManager.LoaderCallbacks<String[]> {
+public class MainActivity
+    extends AppCompatActivity
+    implements MainActivityAdapter.MainActivityAdapterOnClickHandler,
+               LoaderManager.LoaderCallbacks<String[]>,
+               SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = "V/" + MainActivity.class.getSimpleName();
     private static final int FORECAST_WEATHER_ID = 0;
+    private static boolean PREFERENCES_UPDATED = false;
     private TextView mTvErrorMessage;
     private ProgressBar mPbProgressBar;
     private RecyclerView mRvMainActivity;
@@ -48,6 +55,27 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
 
         setupLayoutManager();
         loadWeatherData();
+
+        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+    }
+
+    /**
+     * OnStart is called when the Activity is coming into view. This happens when the Activity is
+     * first created, but also happens when the Activity is returned to from another Activity.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (PREFERENCES_UPDATED) {
+            getSupportLoaderManager().restartLoader(FORECAST_WEATHER_ID, null, this);
+            PREFERENCES_UPDATED = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -61,10 +89,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.menuRefresh:
-                mMainActivityAdapter.setWeatherData(null);
-                loadWeatherData();
-                return true;
             case R.id.menuMap:
                 openMapLocation();
                 return true;
@@ -164,6 +188,11 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
 
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+    }
+
     /**
      * This method is overridden by our MainActivity class in order to handle RecyclerView item
      * clicks from {@link MainActivityAdapter.MainActivityAdapterOnClickHandler}.
@@ -210,4 +239,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
             Toast.makeText(this, "Could not call " + geo.toString() + ", no receiving apps installed", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private void restartLoader() {}
 }

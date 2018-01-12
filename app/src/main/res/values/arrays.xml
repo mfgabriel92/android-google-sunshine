@@ -1,2 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <!-- Temperature -->
+    <string-array name="pref_units_options">
+        <item>@string/pref_units_label_celsius</item>
+        <item>@string/pref_units_label_fahrenheit</item>
+    </string-array>
+    <string-array name="pref_units_values">
+        <item>@string/pref_units_celsius</item>
+        <item>@string/pref_units_fahrenheit</item>
+    </string-array>
+
+    <!-- Wind -->
+    <string-array name="pref_speed_options">
+        <item>@string/pref_speed_label_kilometers</item>
+        <item>@string/pref_speed_label_miles</item>
+    </string-array>
+    <string-array name="pref_speed_values">
+        <item>@string/pref_speed_kilometers</item>
+        <item>@string/pref_speed_miles</item>
+    </string-array>
+</resources>

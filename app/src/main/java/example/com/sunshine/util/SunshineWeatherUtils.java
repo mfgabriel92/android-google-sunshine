@@ -17,7 +17,8 @@ public class SunshineWeatherUtils {
     public static String formatTemperature(Context context, double temperature) {
         int temperatureResourceId = R.string.format_temperature_celsius;
 
-        if (!SunshinePreferences.isMetric(context)) {
+        if (!SunshinePreferences.isCelsius(context)) {
+            temperature = celsiusToFahrenheit(temperature);
             temperatureResourceId = R.string.format_temperature_fahrenheit;
         }
 
@@ -51,7 +52,7 @@ public class SunshineWeatherUtils {
     public static String getFormattedWind(Context context, float windSpeed, float degrees) {
         int windResourceId = R.string.format_wind_kmh;
 
-        if (!SunshinePreferences.isMetric(context)) {
+        if (!SunshinePreferences.isKilometers(context)) {
             windResourceId = R.string.format_wind_mph;
             windSpeed = .621371192237334f * windSpeed;
         }

@@ -1,6 +1,10 @@
 package example.com.sunshine.data;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
+import example.com.sunshine.R;
 
 public class SunshinePreferences {
 
@@ -52,17 +56,45 @@ public class SunshinePreferences {
      * @return The current user has set in SharedPreferences
      */
     public static String getPreferredWeatherLocation(Context context) {
-        return getDefaultWeatherLocation();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String locationKey = context.getString(R.string.pref_location_key);
+        String locationDefault = context.getString(R.string.pref_location_default);
+
+        return preferences.getString(locationKey, locationDefault);
     }
 
     /**
-     * Returns true if the user has selected metric temperature display.
+     * Returns true if the user has selected Celsius as temperature display.
+     * Returns Fahrenheit if not
      *
      * @param context Context used to get the SharedPreferences
      * @return true If metric display should be used
      */
-    public static boolean isMetric(Context context) {
-        return true;
+    public static boolean isCelsius(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String unitsKey = context.getString(R.string.pref_units_key);
+        String unitsDefault = context.getString(R.string.pref_units_celsius);
+        String unitsPreferred = preferences.getString(unitsKey, unitsDefault);
+        String celsius = context.getString(R.string.pref_units_celsius);
+
+        return celsius.equals(unitsPreferred);
+    }
+
+    /**
+     * Returns true if the user has selected kilometers per hour as speed display.
+     * Returns miles per hour if not
+     *
+     * @param context Context used to get the SharedPreferences
+     * @return true If metric display should be used
+     */
+    public static boolean isKilometers(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String speedKey = context.getString(R.string.pref_speed_key);
+        String speedDefault = context.getString(R.string.pref_speed_kilometers);
+        String speedPreferred = preferences.getString(speedKey, speedDefault);
+        String kilometers = context.getString(R.string.pref_speed_kilometers);
+
+        return kilometers.equals(speedPreferred);
     }
 
     /**
