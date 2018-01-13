@@ -158,9 +158,40 @@ public class WeatherProvider extends ContentProvider {
         }
     }
 
+    /**
+     * Deletes data at a given URI with optional arguments for more fine tuned deletions.
+     *
+     * @param uri The full URI to query
+     * @param selection An optional restriction to apply to rows when deleting.
+     * @param selectionArgs Used in conjunction with the selection statement
+     * @return The number of rows deleted
+     */
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+        int numRowsDeleted = 0;
+
+        if (selection == null) {
+            selection = "1";
+        }
+
+        switch (sUriMatcher.match(uri)) {
+            case CODE_WEATHER: {
+                numRowsDeleted = mDbHelper.getWritableDatabase().delete(
+                    WeatherContract.WeatherEntry.TABLE_NAME,
+                    selection,
+                    selectionArgs
+                );
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+
+        if (numRowsDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        return numRowsDeleted;
     }
 
     @Override
