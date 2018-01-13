@@ -3,10 +3,11 @@ package example.com.sunshine;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.LoaderManager;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
@@ -29,13 +30,8 @@ import example.com.sunshine.data.SunshinePreferences;
 import example.com.sunshine.util.NetworkUtils;
 import example.com.sunshine.util.OpenWeatherJsonUtils;
 
-public class MainActivity
-    extends AppCompatActivity
-    implements MainActivityAdapter.MainActivityAdapterOnClickHandler,
-               LoaderManager.LoaderCallbacks<String[]>,
-               SharedPreferences.OnSharedPreferenceChangeListener {
+public class MainActivity extends AppCompatActivity implements MainActivityAdapter.MainActivityAdapterOnClickHandler, LoaderCallbacks<String[]>, OnSharedPreferenceChangeListener {
 
-    private static final String TAG = "V/" + MainActivity.class.getSimpleName();
     private static final int FORECAST_WEATHER_ID = 0;
     private static boolean PREFERENCES_UPDATED = false;
     private TextView mTvErrorMessage;

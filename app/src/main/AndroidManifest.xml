@@ -38,5 +38,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
+
+        <provider
+            android:authorities="example.com.sunshine"
+            android:name=".data.provider.WeatherProvider"
+            android:exported="false"/>
     </application>
 </manifest>
