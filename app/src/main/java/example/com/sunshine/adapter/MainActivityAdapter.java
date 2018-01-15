@@ -1,5 +1,7 @@
 package example.com.sunshine.adapter;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,14 +10,19 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import example.com.sunshine.MainActivity;
 import example.com.sunshine.R;
+import example.com.sunshine.util.SunshineDateUtils;
+import example.com.sunshine.util.SunshineWeatherUtils;
 
 public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapter.MainActivityViewHolder> {
 
-    private String[] mWeatherData;
+    private Context mContext;
+    private Cursor mCursor;
     private MainActivityAdapterOnClickHandler mClickHandler;
 
-    public MainActivityAdapter(MainActivityAdapterOnClickHandler click) {
+    public MainActivityAdapter(Context context, MainActivityAdapterOnClickHandler click) {
+        mContext = context;
         mClickHandler = click;
     }
 
@@ -43,7 +50,18 @@ public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapte
      */
     @Override
     public void onBindViewHolder(MainActivityViewHolder holder, int position) {
-        holder.mTvWeatherDataItem.setText(mWeatherData[position]);
+        mCursor.moveToPosition(position);
+
+        long dateInMillis = mCursor.getLong(MainActivity.INDEX_WEATHER_DATE);
+        int weatherId = mCursor.getInt(MainActivity.INDEX_WEATHER_ID);
+        String description = SunshineWeatherUtils.getStringForWeatherCondition(mContext, weatherId);
+        double high = mCursor.getDouble(MainActivity.INDEX_HIGH);
+        double low = mCursor.getDouble(MainActivity.INDEX_LOW);
+
+        String dateString = SunshineDateUtils.getFriendlyDateString(mContext, dateInMillis, false);
+        String highAndLow = SunshineWeatherUtils.formatHighLow(mContext, high, low);
+
+        holder.mTvWeatherDataItem.setText(dateString + " - " + description + " - " + highAndLow);
     }
 
     /**
@@ -53,16 +71,15 @@ public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapte
      */
     @Override
     public int getItemCount() {
-        return mWeatherData == null ? 0 : mWeatherData.length;
+        if (mCursor == null) {
+            return 0;
+        }
+
+        return mCursor.getCount();
     }
 
-    /**
-     * Sets the weather on the adapter.
-     *
-     * @param data the new weather data to be displayed.
-     */
-    public void setWeatherData(String[] data) {
-        mWeatherData = data;
+    public void swapCursor(Cursor newCursor) {
+        mCursor = newCursor;
         notifyDataSetChanged();
     }
 
@@ -89,7 +106,7 @@ public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapte
 
         @Override
         public void onClick(View v) {
-            String data = mWeatherData[getAdapterPosition()];
+            String data = mCursor[getAdapterPosition()];
             Log.v("V/MAA", data);
             mClickHandler.onClickHandler(data);
         }
