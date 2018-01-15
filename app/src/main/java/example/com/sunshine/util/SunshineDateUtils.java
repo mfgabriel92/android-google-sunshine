@@ -6,6 +6,7 @@ import android.text.format.DateUtils;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import example.com.sunshine.R;
 
@@ -118,6 +119,22 @@ public class SunshineDateUtils {
                         DateUtils.FORMAT_SHOW_WEEKDAY;
             return DateUtils.formatDateTime(context, localDate, flags);
         }
+    }
+
+    /**
+     * This method returns the number of milliseconds (UTC time) for today's date at midnight in
+     * the local time zone
+     *
+     * @return The number of milliseconds
+     */
+    public static long getNormalizedUtcDateForToday() {
+        long utcNowMillis = System.currentTimeMillis();
+        TimeZone currentTimeZone = TimeZone.getDefault();
+        long gmtOffsetMillis = currentTimeZone.getOffset(utcNowMillis);
+        long timeSinceEpochLocalTimeMillis = utcNowMillis + gmtOffsetMillis;
+        long daysSinceEpochLocal = TimeUnit.MILLISECONDS.toDays(timeSinceEpochLocalTimeMillis);
+
+        return TimeUnit.DAYS.toMillis(daysSinceEpochLocal);
     }
 
     /**

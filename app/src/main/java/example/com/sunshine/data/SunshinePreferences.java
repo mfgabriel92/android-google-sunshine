@@ -16,11 +16,10 @@ public class SunshinePreferences {
      * Helper method to handle setting location details in Preferences.
      *
      * @param context Context used to get the SharedPreferences
-     * @param cityName A human-readable city name, e.g "Mountain View"
      * @param lat The latitude of the city
      * @param lon The longitude of the city
      */
-    public static void setLocationDetails(Context context, String cityName, double lat, double lon) {
+    public static void setLocationDetails(Context context, double lat, double lon) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(PREF_COORD_LAT, Double.doubleToRawLongBits(lat));

@@ -9,7 +9,26 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 
+import example.com.sunshine.data.SunshinePreferences;
+import example.com.sunshine.data.contract.WeatherContract;
+
 public class OpenWeatherJsonUtils {
+
+    private static final String OWM_CITY = "city";
+    private static final String OWM_COORD = "coord";
+    private static final String OWM_LATITUDE = "lat";
+    private static final String OWM_LONGITUDE = "lon";
+    private static final String OWM_LIST = "list";
+    private static final String OWM_PRESSURE = "pressure";
+    private static final String OWM_HUMIDITY = "humidity";
+    private static final String OWM_WINDSPEED = "speed";
+    private static final String OWM_WIND_DIRECTION = "deg";
+    private static final String OWM_TEMPERATURE = "temp";
+    private static final String OWM_MAX = "max";
+    private static final String OWM_MIN = "min";
+    private static final String OWM_WEATHER = "weather";
+    private static final String OWM_WEATHER_ID = "id";
+    private static final String OWM_MESSAGE_CODE = "cod";
 
     /**
      * This method parses JSON from a web response and returns an array of Strings
@@ -19,15 +38,7 @@ public class OpenWeatherJsonUtils {
      * @return Array of Strings describing weather data
      * @throws JSONException If JSON data cannot be properly parsed
      */
-    public static String[] parseJsonFromWebResponse(Context context, String json) throws JSONException {
-        final String OWM_LIST = "list";
-        final String OWM_TEMPERATURE = "temp";
-        final String OWM_MAX = "max";
-        final String OWM_MIN = "min";
-        final String OWM_WEATHER = "weather";
-        final String OWM_DESCRIPTION = "main";
-        final String OWM_MESSAGE_CODE = "cod";
-        String[] parsedWeatherData;
+    public static ContentValues[] parseJsonFromWebResponse(Context context, String json) throws JSONException {
         JSONObject forecastJson = new JSONObject(json);
 
         if (forecastJson.has(OWM_MESSAGE_CODE)) {
@@ -44,40 +55,53 @@ public class OpenWeatherJsonUtils {
         }
 
         JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
-        parsedWeatherData = new String[weatherArray.length()];
-        long localDate = System.currentTimeMillis();
-        long utcDate = SunshineDateUtils.getUTCDateFromLocal(localDate);
-        long startDay = SunshineDateUtils.normalizeDate(utcDate);
+        JSONObject cityObj = forecastJson.getJSONObject(OWM_CITY);
+        JSONObject cityCoord = cityObj.getJSONObject(OWM_COORD);
+        double cityLat = cityCoord.getDouble(OWM_LATITUDE);
+        double cityLon = cityCoord.getDouble(OWM_LONGITUDE);
+        long normalizedDay = SunshineDateUtils.getNormalizedUtcDateForToday();
+        ContentValues[] values = new ContentValues[weatherArray.length()];
+
+        SunshinePreferences.setLocationDetails(context, cityLat, cityLon);
 
         for (int i = 0; i < weatherArray.length(); i++) {
+            long dateTimeMillis;
+            int weatherId;
+            int humidity;
+            double pressure;
+            double windSpeed;
+            double windDirection;
+            double high;
+            double low;
+
             JSONObject dayForecast = weatherArray.getJSONObject(i);
+            JSONObject weatherObj = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+            JSONObject temperatureObj = dayForecast.getJSONObject(OWM_TEMPERATURE);
 
-            long datetimeInMillis = startDay + SunshineDateUtils.DAY_IN_MILLIS * i;
-            String date = SunshineDateUtils.getFriendlyDateString(context, datetimeInMillis, false);
+            dateTimeMillis = normalizedDay + SunshineDateUtils.DAY_IN_MILLIS * i;
+            weatherId = weatherObj.getInt(OWM_WEATHER_ID);
+            humidity = dayForecast.getInt(OWM_HUMIDITY);
+            pressure = dayForecast.getDouble(OWM_PRESSURE);
+            windSpeed = dayForecast.getDouble(OWM_WINDSPEED);
+            windDirection = dayForecast.getDouble(OWM_WIND_DIRECTION);
+            high = temperatureObj.getDouble(OWM_MAX);
+            low = temperatureObj.getDouble(OWM_MIN);
 
-            JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+            ContentValues vals = new ContentValues();
 
-            String description = weatherObject.getString(OWM_DESCRIPTION);
+            vals.put(WeatherContract.WeatherEntry.COLUMN_DATE, dateTimeMillis);
+            vals.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, humidity);
+            vals.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, pressure);
+            vals.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
+            vals.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, windDirection);
+            vals.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, high);
+            vals.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, low);
+            vals.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
-            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
-            double high = temperatureObject.getDouble(OWM_MAX);
-            double low = temperatureObject.getDouble(OWM_MIN);
-            String highAndLow = SunshineWeatherUtils.formatHighLow(context, high, low);
+            values[i] = vals;
 
-            parsedWeatherData[i] = date + " - " + description + " - " + highAndLow;
         }
 
-        return parsedWeatherData;
-    }
-
-    /**
-     * Parse the JSON and convert it into ContentValues that can be inserted into our database.
-     *
-     * @param context An application context, such as a service or activity context.
-     * @param json The JSON to parse into ContentValues.
-     * @return An array of ContentValues parsed from the JSON.
-     */
-    public static ContentValues[] getFullWeatherDataFromJson(Context context, String json) {
-        return null;
+        return values;
     }
 }

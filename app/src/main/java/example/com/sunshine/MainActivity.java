@@ -2,8 +2,6 @@ package example.com.sunshine;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,7 +22,7 @@ import example.com.sunshine.adapter.MainActivityAdapter;
 import example.com.sunshine.data.SunshinePreferences;
 import example.com.sunshine.data.contract.WeatherContract;
 
-public class MainActivity extends AppCompatActivity implements MainActivityAdapter.MainActivityAdapterOnClickHandler, LoaderCallbacks<Cursor>, OnSharedPreferenceChangeListener {
+public class MainActivity extends AppCompatActivity implements MainActivityAdapter.MainActivityAdapterOnClickHandler, LoaderCallbacks<Cursor> {
 
     public static final String[] MAIN_FORECAST_PROJECTION = {
         WeatherContract.WeatherEntry.COLUMN_DATE,
@@ -56,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
         setupLayoutManager();
         loadWeatherData();
 
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+//        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -75,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+//        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -160,10 +158,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
         mMainActivityAdapter.swapCursor(null);
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        PREFERENCES_UPDATED = true;
-    }
+//    @Override
+//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+//        PREFERENCES_UPDATED = true;
+//    }
 
     /**
      * This method is overridden by our MainActivity class in order to handle RecyclerView item
