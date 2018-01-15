@@ -106,8 +106,7 @@ public class MainActivityAdapter extends RecyclerView.Adapter<MainActivityAdapte
 
         @Override
         public void onClick(View v) {
-            String data = mCursor[getAdapterPosition()];
-            Log.v("V/MAA", data);
+            String data = mTvWeatherDataItem.getText().toString();
             mClickHandler.onClickHandler(data);
         }
     }

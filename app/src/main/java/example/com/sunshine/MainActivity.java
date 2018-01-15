@@ -9,7 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,19 +18,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.net.URL;
 
 import example.com.sunshine.adapter.MainActivityAdapter;
 import example.com.sunshine.data.SunshinePreferences;
 import example.com.sunshine.data.contract.WeatherContract;
-import example.com.sunshine.util.NetworkUtils;
-import example.com.sunshine.util.OpenWeatherJsonUtils;
 
 public class MainActivity extends AppCompatActivity implements MainActivityAdapter.MainActivityAdapterOnClickHandler, LoaderCallbacks<Cursor>, OnSharedPreferenceChangeListener {
 
@@ -47,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
 
     private static final int FORECAST_WEATHER_ID = 0;
     private static boolean PREFERENCES_UPDATED = false;
-    private TextView mTvErrorMessage;
+    private int mPos;
     private ProgressBar mPbProgressBar;
     private RecyclerView mRvMainActivity;
     private MainActivityAdapter mMainActivityAdapter;
@@ -57,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTvErrorMessage = findViewById(R.id.tvErrorMessage);
         mPbProgressBar = findViewById(R.id.pbProgressBar);
         mRvMainActivity = findViewById(R.id.rvMainActivity);
         mMainActivityAdapter = new MainActivityAdapter(this,this);
@@ -121,13 +112,18 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
     @Override
     public Loader<Cursor> onCreateLoader(int id, final Bundle args) {
         switch (id) {
-            case FORECAST_WEATHER_ID: {
-                Uri forecastQueryUri = WeatherContract.WeatherEntry.CONTENT_URI;
-            }
+            case FORECAST_WEATHER_ID:
+                return new CursorLoader(
+                    this,
+                    WeatherContract.WeatherEntry.CONTENT_URI,
+                    MAIN_FORECAST_PROJECTION,
+                    WeatherContract.WeatherEntry.getSqlSelectForTodayOnwards(),
+                    null,
+                    WeatherContract.WeatherEntry.COLUMN_DATE + " ASC"
+                );
+            default:
+                throw new RuntimeException("Loader not implemented: " + id);
         }
-        return new AsyncTaskLoader<Cursor>(this) {
-
-        };
     }
 
     /**
@@ -139,6 +135,17 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mMainActivityAdapter.swapCursor(data);
+
+        if (mPos == RecyclerView.NO_POSITION) {
+            mPos = 0;
+        }
+
+        mRvMainActivity.smoothScrollToPosition(mPos);
+
+        if (data.getCount() != 0) {
+            mPbProgressBar.setVisibility(View.INVISIBLE);
+            mRvMainActivity.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
