@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -19,10 +18,12 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import example.com.sunshine.adapter.MainActivityAdapter;
+import example.com.sunshine.adapter.MainActivityAdapter.MainActivityAdapterOnClickHandler;
 import example.com.sunshine.data.SunshinePreferences;
 import example.com.sunshine.data.contract.WeatherContract;
+import example.com.sunshine.util.SunshineSyncUtils;
 
-public class MainActivity extends AppCompatActivity implements MainActivityAdapter.MainActivityAdapterOnClickHandler, LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity implements MainActivityAdapterOnClickHandler, LoaderCallbacks<Cursor> {
 
     public static final String[] MAIN_FORECAST_PROJECTION = {
         WeatherContract.WeatherEntry.COLUMN_DATE,
@@ -35,9 +36,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
     public static final int INDEX_LOW = 2;
     public static final int INDEX_WEATHER_ID = 3;
 
-    private static final int FORECAST_WEATHER_ID = 0;
+    private static final int ID_FORECAST_LOADER = 0;
     private static boolean PREFERENCES_UPDATED = false;
-    private int mPos;
+    private int mPos = RecyclerView.NO_POSITION;
     private ProgressBar mPbProgressBar;
     private RecyclerView mRvMainActivity;
     private MainActivityAdapter mMainActivityAdapter;
@@ -46,26 +47,24 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getSupportActionBar().setElevation(0f);
 
         mPbProgressBar = findViewById(R.id.pbProgressBar);
         mRvMainActivity = findViewById(R.id.rvMainActivity);
         mMainActivityAdapter = new MainActivityAdapter(this,this);
 
         setupLayoutManager();
-        loadWeatherData();
+        showLoading();
 
-//        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+        getSupportLoaderManager().initLoader(ID_FORECAST_LOADER, null, this);
+        SunshineSyncUtils.initialize(this);
     }
 
-    /**
-     * OnStart is called when the Activity is coming into view. This happens when the Activity is
-     * first created, but also happens when the Activity is returned to from another Activity.
-     */
     @Override
     protected void onStart() {
         super.onStart();
         if (PREFERENCES_UPDATED) {
-            getSupportLoaderManager().restartLoader(FORECAST_WEATHER_ID, null, this);
+            getSupportLoaderManager().restartLoader(ID_FORECAST_LOADER, null, this);
             PREFERENCES_UPDATED = false;
         }
     }
@@ -73,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -110,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
     @Override
     public Loader<Cursor> onCreateLoader(int id, final Bundle args) {
         switch (id) {
-            case FORECAST_WEATHER_ID:
+            case ID_FORECAST_LOADER:
                 return new CursorLoader(
                     this,
                     WeatherContract.WeatherEntry.CONTENT_URI,
@@ -158,47 +156,43 @@ public class MainActivity extends AppCompatActivity implements MainActivityAdapt
         mMainActivityAdapter.swapCursor(null);
     }
 
-//    @Override
-//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//        PREFERENCES_UPDATED = true;
-//    }
-
     /**
      * This method is overridden by our MainActivity class in order to handle RecyclerView item
      * clicks from {@link MainActivityAdapter.MainActivityAdapterOnClickHandler}.
      *
-     * @param data data to display
+     * @param date data to display
      */
     @Override
-    public void onClickHandler(String data) {
+    public void onClickHandler(long date) {
         Intent weatherDetailIntent = new Intent(this, WeatherDetailActivity.class);
-        weatherDetailIntent.putExtra(Intent.EXTRA_TEXT, data);
+        Uri uriForDate = WeatherContract.WeatherEntry.buildWeatherUriWithDate(date);
+        weatherDetailIntent.setData(uriForDate);
 
         startActivity(weatherDetailIntent);
+    }
+
+    private void showLoading() {
+        mRvMainActivity.setVisibility(View.INVISIBLE);
+        mPbProgressBar.setVisibility(View.VISIBLE);
     }
 
     /**
      * Sets up the LayoutManager
      */
     private void setupLayoutManager() {
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        mRvMainActivity.setLayoutManager(layoutManager);
+        mRvMainActivity.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        mRvMainActivity.setHasFixedSize(true);
         mRvMainActivity.setAdapter(mMainActivityAdapter);
-    }
-
-    /**
-     * Loads the weather data by executing the inner class WeatherQueryTask
-     */
-    private void loadWeatherData() {
-        getSupportLoaderManager().restartLoader(FORECAST_WEATHER_ID, null, MainActivity.this);
     }
 
     /**
      * Implicit intent that opens any apps that supports geo location, such as Google Maps
      */
     private void openMapLocation() {
-        String address = SunshinePreferences.getPreferredWeatherLocation(this);
-        Uri geo =  Uri.parse("geo:0,0?q=" + address);
+        double[] coords = SunshinePreferences.getLocationCoordinates(this);
+        String lat = Double.toString(coords[0]);
+        String lon = Double.toString(coords[1]);
+        Uri geo = Uri.parse("geo:" + lat + "," + lon);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(geo);

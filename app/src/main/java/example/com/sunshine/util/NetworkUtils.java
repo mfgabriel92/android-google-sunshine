@@ -14,10 +14,9 @@ import example.com.sunshine.data.SunshinePreferences;
 
 public class NetworkUtils {
 
-    private static final String TAG = NetworkUtils.class.getSimpleName();
-    private static final String WEATHER_URL = "https://andfun-weather.udacity.com";
-    private static final String DYNAMIC_WEATHER_URL = WEATHER_URL + "/weather";
-    private static final String STATIC_WEATHER_URL = WEATHER_URL + "/staticweather";
+    private static final String BASE_URL = "https://andfun-weather.udacity.com";
+    private static final String DYNAMIC_WEATHER_URL = BASE_URL + "/weather";
+    private static final String STATIC_WEATHER_URL = BASE_URL + "/staticweather";
     private static final String FORECAST_BASE_URL = STATIC_WEATHER_URL;
     private static final String format = "json";
     private static final String units = "metric";
@@ -65,12 +64,17 @@ public class NetworkUtils {
 
             Scanner scanner = new Scanner(inputStream);
             scanner.useDelimiter("\\A");
+            String response;
 
             if (scanner.hasNext()) {
-                return scanner.next();
+                response = scanner.next();
             } else {
                 return null;
             }
+
+            scanner.close();
+
+            return response;
         } finally {
             urlConnection.disconnect();
         }

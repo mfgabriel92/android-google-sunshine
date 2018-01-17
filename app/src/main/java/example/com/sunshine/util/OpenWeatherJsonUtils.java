@@ -99,7 +99,6 @@ public class OpenWeatherJsonUtils {
             vals.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
             values[i] = vals;
-
         }
 
         return values;

@@ -8,6 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
+
+import java.util.Arrays;
 
 import example.com.sunshine.data.contract.DatabaseHelper;
 import example.com.sunshine.data.contract.WeatherContract;
@@ -60,7 +63,7 @@ public class WeatherProvider extends ContentProvider {
         Cursor cursor;
 
         switch (sUriMatcher.match(uri)) {
-            case CODE_WEATHER: {
+            case CODE_WEATHER:
                 cursor = mDbHelper.getReadableDatabase().query(
                     WeatherContract.WeatherEntry.TABLE_NAME,
                     projection,
@@ -72,8 +75,7 @@ public class WeatherProvider extends ContentProvider {
                 );
 
                 break;
-            }
-            case CODE_WEATHER_WITH_DATE: {
+            case CODE_WEATHER_WITH_DATE:
                 String normalizedUtcDateString = uri.getLastPathSegment();
 
                 cursor = mDbHelper.getReadableDatabase().query(
@@ -87,7 +89,6 @@ public class WeatherProvider extends ContentProvider {
                 );
 
                 break;
-            }
             default:
                 throw new UnsupportedOperationException("Unknown URI: " + uri);
         }

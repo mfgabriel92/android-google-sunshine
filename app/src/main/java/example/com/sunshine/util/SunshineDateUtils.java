@@ -12,24 +12,7 @@ import example.com.sunshine.R;
 
 public class SunshineDateUtils {
 
-    public static final long SECOND_IN_MILLIS = 1000;
-    public static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS * 60;
-    public static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS * 60;
-    public static final long DAY_IN_MILLIS = HOUR_IN_MILLIS / 24;
-
-    /**
-     * This method returns the number of days since the epoch (January 01, 1970, 12:00 Midnight UTC)
-     * in UTC time from the current date.
-     *
-     * @param date A date in milliseconds in local time.
-     * @return The number of days in UTC time from the epoch.
-     */
-    public static long getDayNumber(long date) {
-        TimeZone timeZone = TimeZone.getDefault();
-        long gmtOffset = timeZone.getOffset(date);
-
-        return (date + gmtOffset) / DAY_IN_MILLIS;
-    }
+    public static final long DAY_IN_MILLIS = TimeUnit.DAYS.toMillis(1);
 
     /**
      * Normalizes the date for database insertion.
@@ -38,7 +21,7 @@ public class SunshineDateUtils {
      * @return The UTC date at 12 midnight.
      */
     public static long normalizeDate(long date) {
-        return date / DAY_IN_MILLIS * DAY_IN_MILLIS;
+        return TimeUnit.MILLISECONDS.toDays(date) * DAY_IN_MILLIS;
     }
 
     /**
@@ -50,38 +33,7 @@ public class SunshineDateUtils {
      * @return true if the date represents the beginning of a day in Unix time, false otherwise
      */
     public static boolean isDateNormalized(long millisSinceEpoch) {
-        boolean isDateNormalized = false;
-        if (millisSinceEpoch % DAY_IN_MILLIS == 0) {
-            isDateNormalized = true;
-        }
-
-        return isDateNormalized;
-    }
-
-    /**
-     * Converts the given UTC date into local timezone.
-     *
-     * @param utcDate The UTC datetime to convert to a local datetime, in milliseconds.
-     * @return The local date (the UTC datetime - the TimeZone offset) in milliseconds.
-     */
-    public static long getLocalDateFromUTC(long utcDate) {
-        TimeZone timeZone = TimeZone.getDefault();
-        long gmtOffset = timeZone.getOffset(utcDate);
-
-        return utcDate - gmtOffset;
-    }
-
-    /**
-     * Converts the given date into UTC format.
-     *
-     * @param localDate The local datetime to convert to a UTC datetime, in milliseconds.
-     * @return The UTC date (the local datetime + the TimeZone offset) in milliseconds.
-     */
-    public static long getUTCDateFromLocal(long localDate) {
-        TimeZone timeZone = TimeZone.getDefault();
-        long gmtOffset = timeZone.getOffset(localDate);
-
-        return localDate + gmtOffset;
+        return millisSinceEpoch % DAY_IN_MILLIS == 0;
     }
 
     /**
@@ -89,34 +41,34 @@ public class SunshineDateUtils {
      * to users.
      *
      * @param context Context to use for resource localization
-     * @param dateInMillis The date in milliseconds (UTC)
+     * @param normalizedUtcMidnight The date in milliseconds (UTC)
      * @param showFullDate Used to show a fuller-version of the date, which always contains either
      * the day of the week, today, or tomorrow, in addition to the date.
      * @return A user-friendly representation of the date such as "Today, June 8", "Tomorrow",
      * or "Friday"
      */
-    public static String getFriendlyDateString(Context context, long dateInMillis, boolean showFullDate) {
-        long localDate = getLocalDateFromUTC(dateInMillis);
-        long dayNumber = getDayNumber(localDate);
-        long currentDayNumber = getDayNumber(System.currentTimeMillis());
+    public static String getFriendlyDateString(Context context, long normalizedUtcMidnight, boolean showFullDate) {
+        long localDate = getLocalMidnightFromNormalizedUtcDate(normalizedUtcMidnight);
+        long daysFromEpochToProvidedDate = TimeUnit.MILLISECONDS.toDays(localDate);
+        long daysFromEpochToToday = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis());
 
-        if (dayNumber == currentDayNumber || showFullDate) {
+        if (daysFromEpochToProvidedDate == daysFromEpochToToday || showFullDate) {
             String dayName = getDayName(context, localDate);
             String readableDate = getReadableDateString(context, localDate);
 
-            if (dayNumber - currentDayNumber < 2) {
+            if (daysFromEpochToProvidedDate - daysFromEpochToToday < 2) {
                 String localizedDayName = new SimpleDateFormat("EEEE", Locale.US).format(localDate);
                 return readableDate.replace(localizedDayName, dayName);
             } else {
                 return readableDate;
             }
-        } else if (dayNumber < currentDayNumber + 7) {
+        } else if (daysFromEpochToProvidedDate < daysFromEpochToToday + 7) {
             return getDayName(context, localDate);
         } else {
-            int flags = DateUtils.FORMAT_SHOW_DATE |
-                        DateUtils.FORMAT_NO_YEAR |
-                        DateUtils.FORMAT_ABBREV_ALL |
-                        DateUtils.FORMAT_SHOW_WEEKDAY;
+            int flags = DateUtils.FORMAT_SHOW_DATE
+                | DateUtils.FORMAT_NO_YEAR
+                | DateUtils.FORMAT_ABBREV_ALL
+                | DateUtils.FORMAT_SHOW_WEEKDAY;
             return DateUtils.formatDateTime(context, localDate, flags);
         }
     }
@@ -135,6 +87,20 @@ public class SunshineDateUtils {
         long daysSinceEpochLocal = TimeUnit.MILLISECONDS.toDays(timeSinceEpochLocalTimeMillis);
 
         return TimeUnit.DAYS.toMillis(daysSinceEpochLocal);
+    }
+
+    /**
+     * This method will return the local time midnight for the provided normalized UTC date.
+     *
+     * @param normalizedUtcDate UTC time at midnight for a given date. This number comes from the
+     *                          database
+     * @return The local date corresponding to the given normalized UTC date
+     */
+    private static long getLocalMidnightFromNormalizedUtcDate(long normalizedUtcDate) {
+        TimeZone timeZone = TimeZone.getDefault();
+        long gmtOffset = timeZone.getOffset(normalizedUtcDate);
+
+        return normalizedUtcDate - gmtOffset;
     }
 
     /**
@@ -160,15 +126,17 @@ public class SunshineDateUtils {
      * @return the string day of the week
      */
     private static String getDayName(Context context, long dateInMillis) {
-        long dayNumber = getDayNumber(dateInMillis);
-        long currentDayNumber = getDayNumber(System.currentTimeMillis());
+        long daysFromEpochProvided = TimeUnit.MILLISECONDS.toDays(dateInMillis);
+        long daysFromEpochToday = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis());
+        int daysAfterToday = (int) (daysFromEpochProvided - daysFromEpochToday);
 
-        if (dayNumber == currentDayNumber) {
-            return context.getString(R.string.today);
-        } else if (dayNumber == currentDayNumber + 1) {
-            return context.getString(R.string.tomorrow);
-        } else {
-            return new SimpleDateFormat("EEEE", Locale.US).format(dateInMillis);
+        switch (daysAfterToday) {
+            case 0:
+                return context.getString(R.string.today);
+            case 1:
+                return context.getString(R.string.tomorrow);
+            default:
+                return new SimpleDateFormat("EEEE", Locale.US).format(dateInMillis);
         }
     }
 }

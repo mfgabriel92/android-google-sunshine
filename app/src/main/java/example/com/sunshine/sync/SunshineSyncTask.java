@@ -3,7 +3,6 @@ package example.com.sunshine.sync;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.util.Log;
 
 import org.json.JSONException;
 
@@ -30,8 +29,6 @@ public class SunshineSyncTask {
             String jsonResponse = NetworkUtils.getResponseFromHttpUrl(requestUrl);
             ContentValues[] values = OpenWeatherJsonUtils.parseJsonFromWebResponse(context, jsonResponse);
 
-            Log.v("SunshineSyncTask", String.valueOf(values.length));
-
             if (values != null && values.length != 0) {
                 ContentResolver contentResolver = context.getContentResolver();
                 contentResolver.delete(
@@ -39,6 +36,7 @@ public class SunshineSyncTask {
                     null,
                     null
                 );
+
                 contentResolver.bulkInsert(
                     WeatherContract.WeatherEntry.CONTENT_URI,
                     values

@@ -2,6 +2,7 @@ package example.com.sunshine.data.contract;
 
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 import example.com.sunshine.util.SunshineDateUtils;
 
